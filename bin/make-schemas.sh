@@ -116,12 +116,10 @@ if [ ! -f ${TEI_P5_SUBSET}  ]; then
     select yn in "Yes" "No"; do
         case $yn in
             Yes ) cd $TEI_P5 && make clean && XSL=$TEI_STYLESHEETS make -e p5.xml && cd -; break;;
-            No ) exit;;
+            No ) exit 1;;
         esac
     done
 
-
-    exit 1
     # cd $TEI_P5 && \
     #     XSL=$TEI_STYLESHEETS make -e clean && \
     #     XSL=$TEI_STYLESHEETS make -e
@@ -160,4 +158,5 @@ echo "Producing RNC (from rng)" && \
 echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && jing -c ${TARGETSCHEMARNC} ${FILE} || echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
 
 rm -rf "${TMPDIR}"
+
 
