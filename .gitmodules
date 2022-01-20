@@ -1,0 +1,6 @@
+[submodule "TEI"]
+	path = TEI
+	url = https://github.com/TEIC/TEI.git
+[submodule "Stylesheets"]
+	path = Stylesheets
+	url = https://github.com/TEIC/Stylesheets.git

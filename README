@@ -1,0 +1,8 @@
+# -*- org -*-
+#+TITLE: A repository for collecting useful TEI things
+#+AUTHOR: Patrick McAllister (pma@rdorte.org)
+
+This is a container for [[https://tei-c.org/][TEI]] related software that is useful in my
+projects, plus scripts that tie that software together.
+
+
