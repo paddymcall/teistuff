@@ -5,4 +5,19 @@
 This is a container for [[https://tei-c.org/][TEI]] related software that is useful in my
 projects, plus scripts that tie that software together.
 
+The idea is to add this repository as a submodule to your project.
+
+E.g., to produce a schema for ~your-tei-edition.xml~:
+
+#+begin_SRC bash
+  git submodule add https://github.com/paddymcall/teistuff.git teistuff
+  ./teistuff/bin/make-schemas.sh --ignore-git-status your-tei-edition.xml.xml
+#+end_SRC
+
+
+
+
+
+
+
 
