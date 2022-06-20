@@ -17,6 +17,8 @@ E.g., to produce a schema for ~your-tei-edition.xml~:
 
 
 
+*KNOWN BUG*: the path to your project should not contain any spaces
+(this is a problem with file:./Stylesheets/bin/teitorelaxng).
 
 
 
