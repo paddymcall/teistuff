@@ -58,6 +58,11 @@ SCHEMADIR=$(realpath "${SCHEMADIR/#\~/$HOME}")
 
 echo "Expecting schemas in ${SCHEMADIR}"
 
+if [ ! -d "${SCHEMADIR}" ]; then
+    echo "Creating ${SCHEMADIR}"
+    mkdir "${SCHEMADIR}"
+fi
+
 if output=$(git status --porcelain) && [ -z "$output" ]; then
     echo "Repo clean, will proceed"
 elif [ ${IGNOREGIT} == "YES" ]; then
@@ -88,11 +93,11 @@ else
     TARGETSCHEMA="${SCHEMADIR}/schema.rng"
 fi
 
-TARGETSCHEMARNC=$(dirname ${TARGETSCHEMA})/$(basename -s rng ${TARGETSCHEMA})"rnc"
+TARGETSCHEMARNC="$(dirname ${TARGETSCHEMA})"/"$(basename -s rng ${TARGETSCHEMA})""rnc"
 
 echo "Going for ${TARGETODD} and then ${TARGETSCHEMA}"
 
-if [ ${CALLEDFORDIR} == "NO" ] && [ ! -f ${TARGETODD} ]; then
+if [ ${CALLEDFORDIR} == "NO" ] && [ ! -f "${TARGETODD}" ]; then
     TMPDIR=`mktemp -d`
     cp ${FILE} ${TMPDIR}
     echo "Copied ${FILE} to ${TMPDIR} so the ODD stuff will work."
@@ -108,14 +113,18 @@ echo "Targeting ${FILE} in <${CONTAINERDIR}>"
 # TEI P5 distro.  To get that, do:
 
 
-if [ ! -f ${TEI_P5_SUBSET}  ]; then
+if [ ! -f "${TEI_P5_SUBSET}"  ]; then
     echo "You have to provide ${TEI_P5_SUBSET}"
     echo "Probably this will work:"
-    echo "cd $TEI_P5 && make clean && XSL=$TEI_STYLESHEETS make -e p5.xml"
+    echo "mkdir ${TEI_P5} cd ${TEI_P5} && make clean && XSL=$TEI_STYLESHEETS make -e p5.xml"
     echo "Shall I run that?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) cd $TEI_P5 && make clean && XSL=$TEI_STYLESHEETS make -e p5.xml && cd -; break;;
+            Yes ) mkdir -p "${TEI_P5}" && \
+			cd "${TEI_P5}" && \
+			make clean && \
+			XSL="${TEI_STYLESHEETS}" make -e p5.xml && \
+			cd -; break;;
             No ) exit 1;;
         esac
     done
@@ -128,13 +137,13 @@ else
 fi
 
 # do we have an odd?
-if [ ! -f ${TARGETODD} ] ; then
+if [ ! -f "${TARGETODD}" ] ; then
     echo "${TARGETODD} not found, creating with oddbyexample"
-    java -jar /usr/share/java/Saxon-HE.jar \
-	 ${TEI_STYLESHEETS}/tools/oddbyexample.xsl \
+    java -jar ./teistuff/Stylesheets/lib/saxon10he.jar \
+	 -xsl:${TEI_STYLESHEETS}/tools/oddbyexample.xsl \
 	 -it:main \
 	 -xi:on \
-	 corpus=${CONTAINERDIR} \
+	 corpus="${CONTAINERDIR}" \
 	 enumerateRend=true \
 	 defaultSource=$(realpath -e "${TEI_P5_SUBSET}") > "${TARGETODD}"
 	 # verbose=true
@@ -145,17 +154,19 @@ fi
 # and the rnc?
 
 echo "Producing RNG" && \
-    bash $TEI_STYLESHEETS/bin/teitorelaxng \
+    "${TEI_STYLESHEETS}"/bin/teitorelaxng \
          --localsource=$(realpath -e "${TEI_P5_SUBSET}") \
          --odd \
-         ${TARGETODD} \
-         ${TARGETSCHEMA}
+         "${TARGETODD}" \
+         "${TARGETSCHEMA}"
 
 echo "Producing RNC (from rng)" && \
-    trang ${TARGETSCHEMA} ${TARGETSCHEMARNC}
+    trang "${TARGETSCHEMA}" "${TARGETSCHEMARNC}"
 
 # do an evaluation
-echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && jing -c ${TARGETSCHEMARNC} ${FILE} || echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
+echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && \
+    jing -c "${TARGETSCHEMARNC}" "${FILE}" ||\
+	echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
 
 rm -rf "${TMPDIR}"
 
