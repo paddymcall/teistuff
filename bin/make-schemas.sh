@@ -163,9 +163,13 @@ echo "Producing RNC (from rng)" && \
     trang "${TARGETSCHEMA}" "${TARGETSCHEMARNC}"
 
 # do an evaluation
-echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && \
-    jing -c "${TARGETSCHEMARNC}" "${FILE}" ||\
-	echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
+if [ -f ${FILE} ] ; then
+    echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && \
+	jing -c "${TARGETSCHEMARNC}" "${FILE}" ||\
+	    echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
+else
+    echo "Not validating for dummy file"
+fi
 
 rm -rf "${TMPDIR}"
 
