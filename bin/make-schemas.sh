@@ -79,8 +79,7 @@ elif [ -d ${FILE} ]; then
     echo "Working on directory: ${FILE}"
     CALLEDFORDIR=YES
 elif [ ! -f ${FILE} ]; then
-    echo "Can't read file: ${FILE}"
-    exit 1
+    echo "Can't read file: ${FILE}, treating as dummy file."
 else
     echo "Working on ${FILE}"
 fi
