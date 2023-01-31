@@ -12,7 +12,7 @@ E.g., to produce a schema for ~your-tei-edition.xml~:
 #+begin_SRC bash
   git submodule add https://github.com/paddymcall/teistuff.git teistuff && \
       git submodule update --init --recursive teistuff/ && \
-      ./teistuff/bin/make-schemas.sh --ignore-git-status your-tei-edition.xml.xml
+      ./teistuff/bin/make-schemas.sh --ignore-git-status your-tei-edition.xml
 #+end_SRC
 
 
