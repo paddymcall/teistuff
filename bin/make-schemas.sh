@@ -23,6 +23,11 @@ show_help () {
     echo "This command creates an RNC schema for a specified TEI XML file."
     echo "An odd will be generated and saved in ./schemas/, unless it's already there."
     echo "From that ODD, an RNC file will be created in the same location."
+    echo "Your config is this:"
+    echo "TEISTUFF=${TEISTUFF}"
+    echo "TEI_STYLESHEETS=${TEI_STYLESHEETS}"
+    echo "TEI_P5=${TEI_P5}"
+    echo "TEI_P5_SUBSET=${TEI_P5_SUBSET}"
 }
 
 
@@ -138,7 +143,7 @@ fi
 # do we have an odd?
 if [ ! -f "${TARGETODD}" ] ; then
     echo "${TARGETODD} not found, creating with oddbyexample"
-    java -jar ./teistuff/Stylesheets/lib/saxon10he.jar \
+    java -jar ${TEI_STYLESHEETS}/lib/saxon10he.jar \
 	 -xsl:${TEI_STYLESHEETS}/tools/oddbyexample.xsl \
 	 -it:main \
 	 -xi:on \
