@@ -19,6 +19,8 @@ show_help () {
     echo "Usage: make-schemas.sh [options] TEI-XML-file"
     echo "Options:"
     echo "-h|--help: show this help"
+    echo "-i|--ignore-git-status: ignore current git status (might overwrite things that haven't been saved!) "
+    echo "--schema-dir=DIR: Where to put generated schemas"
     echo ""
     echo "This command creates an RNC schema for a specified TEI XML file."
     echo "An odd will be generated and saved in ./schemas/, unless it's already there."
