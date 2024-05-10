@@ -160,7 +160,7 @@ fi
 # and the rnc?
 
 echo "Producing RNG" && \
-    "${TEI_STYLESHEETS}"/bin/teitorelaxng \
+    "${TEI_STYLESHEETS}"/bin/oddtorng \
          --localsource=$(realpath -e "${TEI_P5_SUBSET}") \
          --odd \
          "${TARGETODD}" \
