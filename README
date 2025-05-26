@@ -37,9 +37,18 @@ Or, for a reproducible version:
   make JAVA_HOME=$GUIX_ENVIRONMENT tei-docs
 #+END_SRC
 
+Run ~bin/make-schemas.sh~ on a document:
+
+#+BEGIN_SRC bash :exports code :results output verbatim
+  wget -O /tmp/howotomakep5.xml https://raw.githubusercontent.com/TEIC/TEI/refs/tags/P5_Release_4.9.0/Documents/howtomakep5.xml
+  guix shell -m manifest.scm -- ./bin/make-schemas.sh --ignore-git-status --schema-dir=/tmp/howotomakep5-schemas/ /tmp/howtomakep5.xml
+  ls -lha /tmp/howotomakep5-schemas/
+#+END_SRC
+
+
 Applied to a TEI document (fetched with ~wget~):
 
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash :exports code :results output verbatim
   wget https://raw.githubusercontent.com/TEIC/TEI/refs/tags/P5_Release_4.9.0/Documents/howtomakep5.xml
-  guix time-machine -C channels.scm -- shell -m manifest.scm --container --symlink="/usr/bin/env=bin/env" ./bin/make-schemas.sh howtomakep5.xml
+  guix time-machine -C channels.scm -- shell -m manifest.scm --container --symlink="/usr/bin/env=bin/env" -- ./bin/make-schemas.sh --ignore-git-status howtomakep5.xml
 #+END_SRC
