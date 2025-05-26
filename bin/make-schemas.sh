@@ -19,10 +19,17 @@ show_help () {
     echo "Usage: make-schemas.sh [options] TEI-XML-file"
     echo "Options:"
     echo "-h|--help: show this help"
+    echo "-i|--ignore-git-status: ignore current git status (might overwrite things that haven't been saved!) "
+    echo "--schema-dir=DIR: Where to put generated schemas"
     echo ""
     echo "This command creates an RNC schema for a specified TEI XML file."
     echo "An odd will be generated and saved in ./schemas/, unless it's already there."
     echo "From that ODD, an RNC file will be created in the same location."
+    echo "Your config is this:"
+    echo "TEISTUFF=${TEISTUFF}"
+    echo "TEI_STYLESHEETS=${TEI_STYLESHEETS}"
+    echo "TEI_P5=${TEI_P5}"
+    echo "TEI_P5_SUBSET=${TEI_P5_SUBSET}"
 }
 
 
@@ -58,6 +65,11 @@ SCHEMADIR=$(realpath "${SCHEMADIR/#\~/$HOME}")
 
 echo "Expecting schemas in ${SCHEMADIR}"
 
+if [ ! -d "${SCHEMADIR}" ]; then
+    echo "Creating ${SCHEMADIR}"
+    mkdir "${SCHEMADIR}"
+fi
+
 if output=$(git status --porcelain) && [ -z "$output" ]; then
     echo "Repo clean, will proceed"
 elif [ ${IGNOREGIT} == "YES" ]; then
@@ -74,8 +86,7 @@ elif [ -d ${FILE} ]; then
     echo "Working on directory: ${FILE}"
     CALLEDFORDIR=YES
 elif [ ! -f ${FILE} ]; then
-    echo "Can't read file: ${FILE}"
-    exit 1
+    echo "Can't read file: ${FILE}, treating as dummy file."
 else
     echo "Working on ${FILE}"
 fi
@@ -88,11 +99,11 @@ else
     TARGETSCHEMA="${SCHEMADIR}/schema.rng"
 fi
 
-TARGETSCHEMARNC=$(dirname ${TARGETSCHEMA})/$(basename -s rng ${TARGETSCHEMA})"rnc"
+TARGETSCHEMARNC="$(dirname ${TARGETSCHEMA})"/"$(basename -s rng ${TARGETSCHEMA})""rnc"
 
 echo "Going for ${TARGETODD} and then ${TARGETSCHEMA}"
 
-if [ ${CALLEDFORDIR} == "NO" ] && [ ! -f ${TARGETODD} ]; then
+if [ ${CALLEDFORDIR} == "NO" ] && [ ! -f "${TARGETODD}" ]; then
     TMPDIR=`mktemp -d`
     cp ${FILE} ${TMPDIR}
     echo "Copied ${FILE} to ${TMPDIR} so the ODD stuff will work."
@@ -108,14 +119,18 @@ echo "Targeting ${FILE} in <${CONTAINERDIR}>"
 # TEI P5 distro.  To get that, do:
 
 
-if [ ! -f ${TEI_P5_SUBSET}  ]; then
+if [ ! -f "${TEI_P5_SUBSET}"  ]; then
     echo "You have to provide ${TEI_P5_SUBSET}"
     echo "Probably this will work:"
-    echo "cd $TEI_P5 && make clean && XSL=$TEI_STYLESHEETS make -e p5.xml"
+    echo "mkdir ${TEI_P5} cd ${TEI_P5} && make clean && XSL=$TEI_STYLESHEETS make -e p5.xml"
     echo "Shall I run that?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) cd $TEI_P5 && make clean && XSL=$TEI_STYLESHEETS make -e p5.xml && cd -; break;;
+            Yes ) mkdir -p "${TEI_P5}" && \
+			cd "${TEI_P5}" && \
+			make clean && \
+			XSL="${TEI_STYLESHEETS}" make -e p5.xml && \
+			cd -; break;;
             No ) exit 1;;
         esac
     done
@@ -128,13 +143,13 @@ else
 fi
 
 # do we have an odd?
-if [ ! -f ${TARGETODD} ] ; then
+if [ ! -f "${TARGETODD}" ] ; then
     echo "${TARGETODD} not found, creating with oddbyexample"
-    java -jar /usr/share/java/Saxon-HE.jar \
-	 ${TEI_STYLESHEETS}/tools/oddbyexample.xsl \
+    java -jar ${TEI_STYLESHEETS}/lib/saxon10he.jar \
+	 -xsl:${TEI_STYLESHEETS}/tools/oddbyexample.xsl \
 	 -it:main \
 	 -xi:on \
-	 corpus=${CONTAINERDIR} \
+	 corpus="${CONTAINERDIR}" \
 	 enumerateRend=true \
 	 defaultSource=$(realpath -e "${TEI_P5_SUBSET}") > "${TARGETODD}"
 	 # verbose=true
@@ -145,17 +160,23 @@ fi
 # and the rnc?
 
 echo "Producing RNG" && \
-    bash $TEI_STYLESHEETS/bin/teitorelaxng \
+    "${TEI_STYLESHEETS}"/bin/oddtorng \
          --localsource=$(realpath -e "${TEI_P5_SUBSET}") \
          --odd \
-         ${TARGETODD} \
-         ${TARGETSCHEMA}
+         "${TARGETODD}" \
+         "${TARGETSCHEMA}"
 
 echo "Producing RNC (from rng)" && \
-    trang ${TARGETSCHEMA} ${TARGETSCHEMARNC}
+    trang "${TARGETSCHEMA}" "${TARGETSCHEMARNC}"
 
 # do an evaluation
-echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && jing -c ${TARGETSCHEMARNC} ${FILE} || echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
+if [ -f ${FILE} ] ; then
+    echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && \
+	jing -c "${TARGETSCHEMARNC}" "${FILE}" ||\
+	    echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
+else
+    echo "Not validating for dummy file"
+fi
 
 rm -rf "${TMPDIR}"
 
