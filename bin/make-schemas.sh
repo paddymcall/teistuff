@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -14,6 +14,12 @@ CALLEDFORDIR=NO
 TMPDIR=""
 CONTAINERDIR=NO
 IGNOREGIT=NO
+
+if [ -z ${JAVA_HOME} ] && [ ! -z ${GUIX_ENVIRONMENT} ]; then
+    echo "Setting JAVA_HOME to ${GUIX_ENVIRONMENT}"
+    JAVA_HOME=${GUIX_ENVIRONMENT}
+    export JAVA_HOME
+fi
 
 show_help () {
     echo "Usage: make-schemas.sh [options] TEI-XML-file"
@@ -167,12 +173,12 @@ echo "Producing RNG" && \
          "${TARGETSCHEMA}"
 
 echo "Producing RNC (from rng)" && \
-    trang "${TARGETSCHEMA}" "${TARGETSCHEMARNC}"
+    java -jar  "${TEI_P5}/Utilities/lib/trang.jar" "${TARGETSCHEMA}" "${TARGETSCHEMARNC}"
 
 # do an evaluation
 if [ -f ${FILE} ] ; then
     echo "Evaluating ${FILE} against ${TARGETSCHEMARNC} (silence=ok)" && \
-	jing -c "${TARGETSCHEMARNC}" "${FILE}" ||\
+	java -jar  "${TEI_P5}/Utilities/lib/jing.jar" -c "${TARGETSCHEMARNC}" "${FILE}" ||\
 	    echo "${FILE} is invalid according to ${TARGETSCHEMARNC}!"
 else
     echo "Not validating for dummy file"

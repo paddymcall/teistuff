@@ -16,11 +16,30 @@ E.g., to produce a schema for ~your-tei-edition.xml~:
 #+end_SRC
 
 
-
 *KNOWN BUG*: the path to your project should not contain any spaces
 (this is a problem with file:./Stylesheets/bin/teitorelaxng).
 
+** GNU Guix option
 
+If you use [[https://guix.gnu.org/][GNU Guix]], you should be able to do this:
 
+#+BEGIN_SRC bash
+  guix shell --container -m manifest.scm
+  make clean
+  make JAVA_HOME=$GUIX_ENVIRONMENT tei-docs
+#+END_SRC
 
+Or, for a reproducible version:
 
+#+BEGIN_SRC bash
+  guix time-machine -C channels.scm -- shell -m manifest.scm --container
+  make clean
+  make JAVA_HOME=$GUIX_ENVIRONMENT tei-docs
+#+END_SRC
+
+Applied to a TEI document (fetched with ~wget~):
+
+#+BEGIN_SRC bash
+  wget https://raw.githubusercontent.com/TEIC/TEI/refs/tags/P5_Release_4.9.0/Documents/howtomakep5.xml
+  guix time-machine -C channels.scm -- shell -m manifest.scm --container --symlink="/usr/bin/env=bin/env" ./bin/make-schemas.sh howtomakep5.xml
+#+END_SRC
