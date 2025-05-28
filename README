@@ -66,3 +66,19 @@ something along these lines should work:
 #+END_SRC
 
 This will produce the HTML documentation in ~./TEI/P5/Guidelines-web/en/html/index.html~.
+
+The GNU Guix equivalent would be:
+
+#+BEGIN_SRC bash
+  guix time-machine -C channels.scm -- shell -m manifest.scm --container
+  cd TEI/P5/
+  make clean
+  make JAVA_HOME=$GUIX_ENVIRONMENT XSL=$(realpath ../../Stylesheets/) html-web
+#+END_SRC
+
+Or in one line:
+
+#+BEGIN_SRC bash
+  guix time-machine -C channels.scm -- shell -m manifest.scm --container -- bash -c 'cd TEI/P5/; make clean; make JAVA_HOME=$GUIX_ENVIRONMENT XSL=$(realpath ../../Stylesheets/) html-web'
+#+END_SRC
+
