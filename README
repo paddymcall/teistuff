@@ -52,3 +52,17 @@ Applied to a TEI document (fetched with ~wget~):
   wget https://raw.githubusercontent.com/TEIC/TEI/refs/tags/P5_Release_4.9.0/Documents/howtomakep5.xml
   guix time-machine -C channels.scm -- shell -m manifest.scm --container --symlink="/usr/bin/env=bin/env" -- ./bin/make-schemas.sh --ignore-git-status howtomakep5.xml
 #+END_SRC
+
+
+** Docker option
+
+Inspired by
+https://teic.github.io/Documentation/TCW/testing_and_building.html,
+something along these lines should work:
+
+#+BEGIN_SRC bash
+  docker run --rm -it -v ./:/tei -e XSL=/tei/Stylesheets --entrypoint='["bash", "-c", "cd tei/TEI/P5; make -e html-web"]' teic/teidev-docker
+  ls -lh ./TEI/P5/Guidelines-web/en/html/index.html
+#+END_SRC
+
+This will produce the HTML documentation in ~./TEI/P5/Guidelines-web/en/html/index.html~.
