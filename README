@@ -37,21 +37,34 @@ Or, for a reproducible version:
   make JAVA_HOME=$GUIX_ENVIRONMENT tei-docs
 #+END_SRC
 
-Run ~bin/make-schemas.sh~ on a document:
+To get a reproducible version if ~teistuff~ is a submodule in some
+other git repository (this example assumes it has been added to the
+root of the containing git repo, where the ~.git~ folder is):
+
+#+BEGIN_SRC bash
+  # cd ~/to/your/git-repo
+  guix time-machine -C teistuff/channels.scm -- shell -m teistuff/manifest.scm --container
+  cd teistuff/
+  make clean
+  make JAVA_HOME=$GUIX_ENVIRONMENT tei-docs
+#+END_SRC
+
+Run ~bin/make-schemas.sh~ on a document (modulo above, if ~teistuff~ is a submodule):
 
 #+BEGIN_SRC bash :exports code :results output verbatim
-  wget -O /tmp/howotomakep5.xml https://raw.githubusercontent.com/TEIC/TEI/refs/tags/P5_Release_4.9.0/Documents/howtomakep5.xml
-  guix shell -m manifest.scm -- ./bin/make-schemas.sh --ignore-git-status --schema-dir=/tmp/howotomakep5-schemas/ /tmp/howtomakep5.xml
-  ls -lha /tmp/howotomakep5-schemas/
+  wget -O ./tmp/howtomakep5.xml https://raw.githubusercontent.com/TEIC/TEI/refs/tags/P5_Release_4.11.0/Documents/howtomakep5.xml
+  guix time-machine -C channels.scm -- shell --container -m manifest.scm -- bash ./bin/make-schemas.sh --ignore-git-status --schema-dir=./tmp/howtomakep5-schemas/ ./tmp/howtomakep5.xml
+  ls -lha ./tmp/howtomakep5-schemas/
 #+END_SRC
 
 
-Applied to a TEI document (fetched with ~wget~):
+Alternative call, for submodule (after running ~wget~ as above):
 
 #+BEGIN_SRC bash :exports code :results output verbatim
-  wget https://raw.githubusercontent.com/TEIC/TEI/refs/tags/P5_Release_4.9.0/Documents/howtomakep5.xml
-  guix time-machine -C channels.scm -- shell -m manifest.scm --container --symlink="/usr/bin/env=bin/env" -- ./bin/make-schemas.sh --ignore-git-status howtomakep5.xml
+  guix time-machine -C channels.scm -- shell -m manifest.scm --container --symlink="/usr/bin/env=bin/env" -- ./bin/make-schemas.sh --ignore-git-status ./tmp/howtomakep5.xml
 #+END_SRC
+
+This will output schema files to ~./schema~.
 
 
 ** Docker option

@@ -1,7 +1,7 @@
 TEI_STYLESHEETS := $(realpath Stylesheets)
 TEI_P5 := $(realpath TEI/P5)
 TEIODD := $(TEI_P5)/p5.xml
-TMPDIR = /tmp
+TMPDIR = ./tmp
 DOCSDIR = $(TMPDIR)/tei-docs
 
 help:
